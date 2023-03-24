@@ -79,6 +79,11 @@ class _MatchPageState extends State<MatchPage> {
         'shot': _homeShotsCounter,
         'goal': _homeGoalsCounter
       });
+      _shotList.add({
+        'team': _homeTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _homeShotsCounter,
+      });
     });
   }
 
@@ -91,6 +96,11 @@ class _MatchPageState extends State<MatchPage> {
         'time': _formatTime(_timeInSeconds),
         'shot': _awayShotsCounter,
         'goal': _awayGoalsCounter
+      });
+      _shotList.add({
+        'team': _awayTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _awayShotsCounter,
       });
     });
   }
@@ -362,84 +372,117 @@ class _MatchPageState extends State<MatchPage> {
         ),
       ),
       body: Center(
-          child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: Container(
-                  color: Colors.black,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _matchStarted ? _homeTeam : 'Home team',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: Container(
+                    color: Colors.black,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _matchStarted ? _homeTeam : 'Home team',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24.0,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      Text(
-                        _matchStarted ? '$_homeShotsCounter' : '0',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 48.0,
+                        const SizedBox(height: 16.0),
+                        Text(
+                          _matchStarted ? '$_homeShotsCounter' : '0',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 48.0,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const VerticalDivider(
-                thickness: 2.0,
-                width: 2.0,
-                color: Colors.white,
-              ),
-              Expanded(
-                child: Container(
-                  color: Colors.black,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _matchStarted ? _awayTeam : 'Away team',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
+                const VerticalDivider(
+                  thickness: 2.0,
+                  width: 2.0,
+                  color: Colors.white,
+                ),
+                Expanded(
+                  child: Container(
+                    color: Colors.black,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _matchStarted ? _awayTeam : 'Away team',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24.0,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16.0),
-                      Text(
-                        _matchStarted ? '$_awayShotsCounter' : '0',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 48.0,
+                        const SizedBox(height: 16.0),
+                        Text(
+                          _matchStarted ? '$_awayShotsCounter' : '0',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 48.0,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const Text('Shot list:'),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _shotList.length,
-              itemBuilder: (context, index) {
-                final shot = _shotList[index];
-                return ListTile(
-                  title: Text('Shot ${index + 1}'),
-                  subtitle: Text(
-                      'Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}'),
-                );
-              },
+              ],
             ),
-          ),
-        ],
-      )),
+            const Text('Shot list:'),
+            // Expanded(
+            //   child: ListView.builder(
+            //     itemCount: _shotList.length,
+            //     itemBuilder: (context, index) {
+            //       final shot = _shotList[index];
+            //       return ListTile(
+            //         title: Text('Shot ${index + 1}'),
+            //         subtitle: Text(
+            //           'Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}',
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
+            // const Text('Goal list:'),
+            // Expanded(
+            //   child: ListView.builder(
+            //     itemCount: _goalList.length,
+            //     itemBuilder: (context, index) {
+            //       final goal = _goalList[index];
+            //       return ListTile(
+            //         title: Text('Goal ${index + 1}'),
+            //         subtitle: Text(
+            //           'Team: ${goal['team']}, Time: ${goal['time']}, Shot number: ${goal['shot']}, Goal number: ${goal['goal']}',
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _shotList.length,
+                itemBuilder: (context, index) {
+                  final shot = _shotList[index];
+                  final goalIndex = _goalList.indexWhere((goal) =>
+                      goal['team'] == shot['team'] &&
+                      goal['shot'] == shot['shot']);
+                  return ListTile(
+                    title: Text('Shot ${index + 1}'),
+                    subtitle: Text(
+                        'Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}${goalIndex >= 0 ? ', Goal number: ${_goalList[goalIndex]['goal']}' : ''}'),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
