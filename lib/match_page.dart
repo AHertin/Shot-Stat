@@ -15,7 +15,10 @@ class _MatchPageState extends State<MatchPage> {
 
   int _homeShotsCounter = 0;
   int _awayShotsCounter = 0;
+  int _homeGoalsCounter = 0;
+  int _awayGoalsCounter = 0;
   final List<Map<String, dynamic>> _shotList = [];
+  final List<Map<String, dynamic>> _goalList = [];
 
   bool _matchStarted = false;
   int _timeInSeconds = 0;
@@ -31,14 +34,22 @@ class _MatchPageState extends State<MatchPage> {
   void _incrementHomeShotCounter() {
     setState(() {
       _homeShotsCounter++;
-      _shotList.add({'team': _homeTeam, 'time': _formatTime(_timeInSeconds), 'shot': _homeShotsCounter});
+      _shotList.add({
+        'team': _homeTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _homeShotsCounter
+      });
     });
   }
 
   void _incrementAwayShotCounter() {
     setState(() {
       _awayShotsCounter++;
-      _shotList.add({'team': _awayTeam, 'time': _formatTime(_timeInSeconds), 'shot': _awayShotsCounter});
+      _shotList.add({
+        'team': _awayTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _awayShotsCounter
+      });
     });
   }
 
@@ -53,6 +64,50 @@ class _MatchPageState extends State<MatchPage> {
   void _decrementAwayShotCounter() {
     if (_awayShotsCounter > 0) {
       setState(() {
+        _awayShotsCounter--;
+      });
+    }
+  }
+
+  void _incrementHomeGoalCounter() {
+    setState(() {
+      _homeGoalsCounter++;
+      _homeShotsCounter++;
+      _goalList.add({
+        'team': _homeTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _homeShotsCounter,
+        'goal': _homeGoalsCounter
+      });
+    });
+  }
+
+  void _incrementAwayGoalCounter() {
+    setState(() {
+      _awayGoalsCounter++;
+      _awayShotsCounter++;
+      _goalList.add({
+        'team': _awayTeam,
+        'time': _formatTime(_timeInSeconds),
+        'shot': _awayShotsCounter,
+        'goal': _awayGoalsCounter
+      });
+    });
+  }
+
+  void _decrementHomeGoalCounter() {
+    if (_homeGoalsCounter > 0) {
+      setState(() {
+        _homeGoalsCounter--;
+        _homeShotsCounter--;
+      });
+    }
+  }
+
+  void _decrementAwayGoalCounter() {
+    if (_awayGoalsCounter > 0) {
+      setState(() {
+        _awayGoalsCounter--;
         _awayShotsCounter--;
       });
     }
@@ -171,58 +226,137 @@ class _MatchPageState extends State<MatchPage> {
       bottomNavigationBar: BottomAppBar(
         color: Colors.blue,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  InkWell(
-                    onTap: _decrementHomeShotCounter,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Icon(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Shots',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(_homeTeam),
+                    InkWell(
+                      onTap: _decrementHomeShotCounter,
+                      child: const Icon(
                         Icons.remove_circle,
                         color: Colors.white,
-                        size: 30.0,
+                        size: 24.0,
                       ),
                     ),
-                  ),
-                  InkWell(
-                    onTap: _incrementHomeShotCounter,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Icon(
+                    const SizedBox(width: 8),
+                    Text(
+                      _homeShotsCounter.toString(),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _incrementHomeShotCounter,
+                      child: const Icon(
                         Icons.add_circle,
                         color: Colors.white,
-                        size: 30.0,
+                        size: 24.0,
                       ),
                     ),
-                  ),
-                  InkWell(
-                    onTap: _decrementAwayShotCounter,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Icon(
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(_awayTeam),
+                    InkWell(
+                      onTap: _decrementAwayShotCounter,
+                      child: const Icon(
                         Icons.remove_circle,
                         color: Colors.white,
-                        size: 30.0,
+                        size: 24.0,
                       ),
                     ),
-                  ),
-                  InkWell(
-                    onTap: _incrementAwayShotCounter,
-                    child: const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Icon(
+                    const SizedBox(width: 8),
+                    Text(
+                      _awayShotsCounter.toString(),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _incrementAwayShotCounter,
+                      child: const Icon(
                         Icons.add_circle,
                         color: Colors.white,
-                        size: 30.0,
+                        size: 24.0,
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Goals',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(_homeTeam),
+                    InkWell(
+                      onTap: _decrementHomeGoalCounter,
+                      child: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _homeGoalsCounter.toString(),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _incrementHomeGoalCounter,
+                      child: const Icon(
+                        Icons.add_circle,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(_awayTeam),
+                    InkWell(
+                      onTap: _decrementAwayGoalCounter,
+                      child: const Icon(
+                        Icons.remove_circle,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _awayGoalsCounter.toString(),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _incrementAwayGoalCounter,
+                      child: const Icon(
+                        Icons.add_circle,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -298,8 +432,8 @@ class _MatchPageState extends State<MatchPage> {
                 final shot = _shotList[index];
                 return ListTile(
                   title: Text('Shot ${index + 1}'),
-                  subtitle:
-                      Text('Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}'),
+                  subtitle: Text(
+                      'Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}'),
                 );
               },
             ),
