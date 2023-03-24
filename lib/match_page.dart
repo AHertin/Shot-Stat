@@ -18,7 +18,6 @@ class _MatchPageState extends State<MatchPage> {
   final List<Map<String, dynamic>> _shotList = [];
 
   bool _matchStarted = false;
-
   int _timeInSeconds = 0;
   bool _timerRunning = false;
   Timer? _timer;
@@ -29,21 +28,21 @@ class _MatchPageState extends State<MatchPage> {
     _startMatch();
   }
 
-  void _incrementHomeCounter() {
+  void _incrementHomeShotCounter() {
     setState(() {
       _homeShotsCounter++;
       _shotList.add({'team': _homeTeam, 'time': _formatTime(_timeInSeconds), 'shot': _homeShotsCounter});
     });
   }
 
-  void _incrementAwayCounter() {
+  void _incrementAwayShotCounter() {
     setState(() {
       _awayShotsCounter++;
       _shotList.add({'team': _awayTeam, 'time': _formatTime(_timeInSeconds), 'shot': _awayShotsCounter});
     });
   }
 
-  void _decrementHomeCounter() {
+  void _decrementHomeShotCounter() {
     if (_homeShotsCounter > 0) {
       setState(() {
         _homeShotsCounter--;
@@ -51,7 +50,7 @@ class _MatchPageState extends State<MatchPage> {
     }
   }
 
-  void _decrementAwayCounter() {
+  void _decrementAwayShotCounter() {
     if (_awayShotsCounter > 0) {
       setState(() {
         _awayShotsCounter--;
@@ -179,7 +178,7 @@ class _MatchPageState extends State<MatchPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   InkWell(
-                    onTap: _decrementHomeCounter,
+                    onTap: _decrementHomeShotCounter,
                     child: const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Icon(
@@ -190,7 +189,7 @@ class _MatchPageState extends State<MatchPage> {
                     ),
                   ),
                   InkWell(
-                    onTap: _incrementHomeCounter,
+                    onTap: _incrementHomeShotCounter,
                     child: const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Icon(
@@ -201,7 +200,7 @@ class _MatchPageState extends State<MatchPage> {
                     ),
                   ),
                   InkWell(
-                    onTap: _decrementAwayCounter,
+                    onTap: _decrementAwayShotCounter,
                     child: const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Icon(
@@ -212,7 +211,7 @@ class _MatchPageState extends State<MatchPage> {
                     ),
                   ),
                   InkWell(
-                    onTap: _incrementAwayCounter,
+                    onTap: _incrementAwayShotCounter,
                     child: const Padding(
                       padding: EdgeInsets.all(16.0),
                       child: Icon(
