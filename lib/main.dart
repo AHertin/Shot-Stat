@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Shot Stats'),
+          toolbarHeight: 80.0, // increase the toolbar height
           backgroundColor: Colors.blue,
         ),
         body: Builder(
