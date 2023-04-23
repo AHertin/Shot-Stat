@@ -1,6 +1,81 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+
+class Shot {
+  String team;
+  String time;
+  int shot;
+  int player;
+  String location;
+  bool isAGoal;
+
+  Shot({
+    required this.team,
+    required this.time,
+    required this.shot,
+    required this.player,
+    required this.location,
+    this.isAGoal = false,
+  });
+
+  dynamic operator [](String field) {
+    switch (field) {
+      case 'team':
+        return team;
+      case 'time':
+        return time;
+      case 'shot':
+        return shot;
+      case 'player':
+        return player;
+      case 'location':
+        return location;
+      case 'isAGoal':
+        return isAGoal;
+      default:
+        throw Exception('Invalid field: $field');
+    }
+  }
+}
+
+class Goal {
+  String team;
+  String time;
+  Shot shot;
+  int goal;
+  int player;
+  String location;
+
+  Goal({
+    required this.team,
+    required this.time,
+    required this.shot,
+    required this.goal,
+    required this.player,
+    required this.location,
+  });
+
+  dynamic operator [](String field) {
+    switch (field) {
+      case 'team':
+        return team;
+      case 'time':
+        return time;
+      case 'shot':
+        return shot;
+      case 'goal':
+        return goal;
+      case 'player':
+        return player;
+      case 'location':
+        return location;
+      default:
+        throw Exception('Invalid field: $field');
+    }
+  }
+}
 
 class MatchPage extends StatefulWidget {
   const MatchPage({Key? key}) : super(key: key);
@@ -17,8 +92,8 @@ class _MatchPageState extends State<MatchPage> {
   int _awayShotsCounter = 0;
   int _homeGoalsCounter = 0;
   int _awayGoalsCounter = 0;
-  final List<Map<String, dynamic>> _shotList = [];
-  final List<Map<String, dynamic>> _goalList = [];
+  final List<Shot> _shotList = [];
+  final List<Goal> _goalList = [];
 
   bool _matchStarted = false;
   int _timeInSeconds = 0;
@@ -31,83 +106,142 @@ class _MatchPageState extends State<MatchPage> {
     _startMatch();
   }
 
+  void _addShot(
+      String teamName, String shotTime, int playerNumber, String location) {
+    List<Shot> teamShots =
+        _shotList.where((shot) => shot.team == teamName).toList();
+    teamShots.sort((a, b) => b.shot.compareTo(a.shot));
+    int highestShotNumber = teamShots.isNotEmpty ? teamShots.first.shot : 0;
+    int newShotNumber = highestShotNumber + 1;
+    Shot newShot = Shot(
+      team: teamName,
+      time: shotTime,
+      player: playerNumber,
+      location: location,
+      shot: newShotNumber,
+    );
+    _shotList.add(newShot);
+  }
+
+  bool _removeLastShot(String teamName) {
+    List<Shot> teamShots =
+        _shotList.where((shot) => shot.team == teamName).toList();
+    if (teamShots.isEmpty) {
+      return false;
+    }
+    int highestShotNumber = teamShots.map((shot) => shot.shot).reduce(max);
+    Shot lastShot =
+        teamShots.lastWhere((shot) => shot.shot == highestShotNumber);
+    if (lastShot.isAGoal) {
+      return false;
+    } else {
+      _shotList.remove(lastShot);
+      return true;
+    }
+  }
+
+  void _addGoal(
+      String teamName, String shotTime, int playerNumber, String location) {
+    List<Shot> teamShots =
+        _shotList.where((shot) => shot.team == teamName).toList();
+    teamShots.sort((a, b) => b.shot.compareTo(a.shot));
+    int highestShotNumber = teamShots.isNotEmpty ? teamShots.first.shot : 0;
+    int newShotNumber = highestShotNumber + 1;
+    List<Goal> teamGoals =
+        _goalList.where((goal) => goal.team == teamName).toList();
+    teamGoals.sort((a, b) => b.goal.compareTo(a.goal));
+    int highestGoalNumber = teamGoals.isNotEmpty ? teamGoals.first.goal : 0;
+    int newGoalNumber = highestGoalNumber + 1;
+    Shot newShot = Shot(
+      team: teamName,
+      time: shotTime,
+      player: playerNumber,
+      location: location,
+      shot: newShotNumber,
+      isAGoal: true,
+    );
+    Goal newGoal = Goal(
+      team: teamName,
+      time: shotTime,
+      player: playerNumber,
+      location: location,
+      goal: newGoalNumber,
+      shot: newShot,
+    );
+    _goalList.add(newGoal);
+    _addShot(teamName, shotTime, playerNumber, location);
+  }
+
+  void _removeLastGoal(String teamName) {
+    List<Goal> teamGoals =
+        _goalList.where((shot) => shot.team == teamName).toList();
+    if (teamGoals.isEmpty) {
+      return;
+    }
+    int highestShotNumber = teamGoals.map((goal) => goal.goal).reduce(max);
+    Goal lastGoal =
+        teamGoals.lastWhere((goal) => goal.goal == highestShotNumber);
+    _goalList.remove(lastGoal);
+    _removeLastShot(teamName);
+  }
+
   void _incrementHomeShotCounter() {
     setState(() {
+      _showPrompt(_homeTeam, 'shot');
       _homeShotsCounter++;
-      _shotList.add({
-        'team': _homeTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _homeShotsCounter
-      });
     });
   }
 
   void _incrementAwayShotCounter() {
     setState(() {
+      _showPrompt(_awayTeam, 'shot');
       _awayShotsCounter++;
-      _shotList.add({
-        'team': _awayTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _awayShotsCounter
-      });
     });
   }
 
   void _decrementHomeShotCounter() {
     if (_homeShotsCounter > 0) {
       setState(() {
-        _homeShotsCounter--;
+        bool shotRemoved = _removeLastShot(_homeTeam);
+        if (!shotRemoved) {
+          _homeShotsCounter--;
+        }
       });
+
     }
   }
 
   void _decrementAwayShotCounter() {
     if (_awayShotsCounter > 0) {
       setState(() {
+        bool shotRemoved = _removeLastShot(_awayTeam);
+        if (!shotRemoved) {
         _awayShotsCounter--;
+        }
       });
     }
   }
 
   void _incrementHomeGoalCounter() {
     setState(() {
+      _showPrompt(_homeTeam, 'goal');
       _homeGoalsCounter++;
       _homeShotsCounter++;
-      _goalList.add({
-        'team': _homeTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _homeShotsCounter,
-        'goal': _homeGoalsCounter
-      });
-      _shotList.add({
-        'team': _homeTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _homeShotsCounter,
-      });
     });
   }
 
   void _incrementAwayGoalCounter() {
     setState(() {
+      _showPrompt(_awayTeam, 'goal');
       _awayGoalsCounter++;
       _awayShotsCounter++;
-      _goalList.add({
-        'team': _awayTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _awayShotsCounter,
-        'goal': _awayGoalsCounter
-      });
-      _shotList.add({
-        'team': _awayTeam,
-        'time': _formatTime(_timeInSeconds),
-        'shot': _awayShotsCounter,
-      });
     });
   }
 
   void _decrementHomeGoalCounter() {
     if (_homeGoalsCounter > 0) {
       setState(() {
+        _removeLastGoal(_homeTeam);
         _homeGoalsCounter--;
         _homeShotsCounter--;
       });
@@ -117,10 +251,86 @@ class _MatchPageState extends State<MatchPage> {
   void _decrementAwayGoalCounter() {
     if (_awayGoalsCounter > 0) {
       setState(() {
+        _removeLastGoal(_awayTeam);
         _awayGoalsCounter--;
         _awayShotsCounter--;
       });
     }
+  }
+
+  void _showPrompt(String team, String type) {
+    TextEditingController timeController = TextEditingController();
+    TextEditingController playerController = TextEditingController();
+    TextEditingController locationController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add $type for $team'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: timeController,
+                decoration: const InputDecoration(
+                  hintText: 'Time',
+                ),
+              ),
+              TextField(
+                controller: playerController,
+                decoration: const InputDecoration(
+                  hintText: 'Player number',
+                ),
+              ),
+              TextField(
+                controller: locationController,
+                decoration: const InputDecoration(
+                  hintText: 'Location',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                String time = timeController.text;
+                int player = int.parse(playerController.text);
+                String location = locationController.text;
+                if (player != null) {
+                  setState(() {
+                    if (type == 'shot') {
+                      _addShot(team, time, player, location);
+                    } else {
+                      _addGoal(team, time, player, location);
+                    }
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text('Invalid input'),
+                        content:
+                            const Text('Please enter a valid player number'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _startMatch() async {
@@ -435,35 +645,6 @@ class _MatchPageState extends State<MatchPage> {
               ],
             ),
             const Text('Shot list:'),
-            // Expanded(
-            //   child: ListView.builder(
-            //     itemCount: _shotList.length,
-            //     itemBuilder: (context, index) {
-            //       final shot = _shotList[index];
-            //       return ListTile(
-            //         title: Text('Shot ${index + 1}'),
-            //         subtitle: Text(
-            //           'Team: ${shot['team']}, Time: ${shot['time']}, Shot number: ${shot['shot']}',
-            //         ),
-            //       );
-            //     },
-            //   ),
-            // ),
-            // const Text('Goal list:'),
-            // Expanded(
-            //   child: ListView.builder(
-            //     itemCount: _goalList.length,
-            //     itemBuilder: (context, index) {
-            //       final goal = _goalList[index];
-            //       return ListTile(
-            //         title: Text('Goal ${index + 1}'),
-            //         subtitle: Text(
-            //           'Team: ${goal['team']}, Time: ${goal['time']}, Shot number: ${goal['shot']}, Goal number: ${goal['goal']}',
-            //         ),
-            //       );
-            //     },
-            //   ),
-            // ),
             Expanded(
               child: ListView.builder(
                 itemCount: _shotList.length,
